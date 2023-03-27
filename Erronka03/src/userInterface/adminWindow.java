@@ -496,7 +496,7 @@ public class adminWindow extends JFrame implements ActionListener {
 				lblLaurdenPointsG.setText(gordeIrakurri.setPoints(3, "Final Laurdenak", "A", K));
 				lblLaurdenPointsH.setText(gordeIrakurri.setPoints(3, "Final Laurdenak", "B", K));
 
-				//Kargatu semiifinletako taldeak
+				//Kargatu semiifinletako taldeak hemen
 				lblSemiTaldeA.setText(gordeIrakurri.setTalde(0, "Semifinalak", "A", K));
 				lblSemiTaldeB.setText(gordeIrakurri.setTalde(0, "Semifinalak", "B", K));
 				lblSemiTaldeC.setText(gordeIrakurri.setTalde(1, "Semifinalak", "A", K));
