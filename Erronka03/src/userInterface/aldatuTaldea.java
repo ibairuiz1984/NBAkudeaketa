@@ -6,9 +6,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
-import classes.Talde;
 import classes.Taldekide;
-import classes.gordeIrakurri;
 
 import java.awt.Color;
 import javax.swing.JLabel;
@@ -24,12 +22,21 @@ import javax.swing.SwingConstants;
 import javax.swing.JComboBox;
 import javax.swing.ListSelectionModel;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.awt.event.FocusAdapter;
 
-public class aldatuTaldea extends JFrame {
+public class aldatuTaldea extends JFrame implements ActionListener, FocusListener, MouseListener {
 
 	private JPanel contentPane;
 	private JTextField textIzena;
@@ -37,10 +44,10 @@ public class aldatuTaldea extends JFrame {
 	private JTextField textJaiotzeData;
 	private JTextField textJatorrizkoHerria;
 	private JTextField textNan;
-	private static aldatuTaldea frame;
-	private static DefaultListModel<Taldekide> Jokalaridlm = new DefaultListModel <Taldekide>();
+	private aldatuTaldea frame;
 	private JRadioButton rdbtnEmakume = new JRadioButton("Emakumezkoa");
 	private JRadioButton rdbtnGizkon = new JRadioButton("Gizkonezkoa");
+	private JRadioButton rdbtnGizon;
 	private JLabel lblAldatuTaldekideak;
 	private JLabel lblTaldeakideak;
 	private JSeparator separatorTaldekide;
@@ -51,12 +58,18 @@ public class aldatuTaldea extends JFrame {
 	private JLabel lblSexua;
 	private JButton btnKendu;
 	private JLabel lblnan;
-	private JButton btnSartu;
+	private JButton btnAldatu;
 	private JButton btnAtzera;
+	private JLabel lblPostu;
+	private JRadioButton rdbtnKoordinatzaile;
+	private JRadioButton rdbtnEntrenatzaile;
+	private JRadioButton rdbtnFisioterapeuta;
+	private JTextField textKolegiatuZnb;
+	private JComboBox<String> comboTaldeak;
+	private JList<Taldekide> listTaldekide;
+	private DefaultListModel<Taldekide> dlmTaldekide;
+	private JButton btnAñadir;
 
-	JComboBox<Talde> comboBoxTalde = new JComboBox<Talde>();
-	ArrayList<Talde> taldeak = gordeIrakurri.irakurriTalde("taldeak.txt");
-	ArrayList<Taldekide> jokalari = gordeIrakurri.irakurriTaldekide("jokalariak.txt");
 	/**
 	 * Launch the application.
 	 */
@@ -64,7 +77,7 @@ public class aldatuTaldea extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					frame = new aldatuTaldea();
+					aldatuTaldea frame = new aldatuTaldea();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -72,6 +85,7 @@ public class aldatuTaldea extends JFrame {
 			}
 		});
 	}
+
 	/**
 	 * Create the frame.
 	 */
@@ -86,318 +100,408 @@ public class aldatuTaldea extends JFrame {
 
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
+
 		lblAldatuTaldekideak = new JLabel("Aldatu Taldekideak");
 		lblAldatuTaldekideak.setFont(new Font("Montserrat", Font.PLAIN, 25));
-		lblAldatuTaldekideak.setBounds(29, 34, 359, 42);
+		lblAldatuTaldekideak.setBounds(29, 23, 359, 42);
 		contentPane.add(lblAldatuTaldekideak);
-		
+
 		lblTaldeakideak = new JLabel("Taldekideak");
 		lblTaldeakideak.setFont(new Font("Montserrat", Font.PLAIN, 16));
-		lblTaldeakideak.setBounds(29, 101, 176, 27);
+		lblTaldeakideak.setBounds(29, 90, 176, 27);
 		contentPane.add(lblTaldeakideak);
-		
-		separatorTaldekide = new JSeparator();
-		separatorTaldekide.setBounds(29, 134, 176, 2);
-		contentPane.add(separatorTaldekide);
-		
-		// JList abiaraztea datu-eredutzat jokalarien zerrenda duten jokalarientzat.
-		JList<Taldekide> listtaldekide = new JList<Taldekide>(Jokalaridlm);
-		// JList-ari SAGU ENTZULE BAT GEHITUZ
-		listtaldekide.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				
-				// Lortu JLISTeko jokalari hautatua.
-				Taldekide jokalari = (Taldekide) listtaldekide.getSelectedValue();
-				
-				// Itzul zaitez jokalaririk aukeratzen ez baduzu.
 
-				if (jokalari == null) {
-					return;
-				}
-				
-				// Testu-eremuetako balioak eguneratzea hautatutako jokalariaren xehetasunekin
-				textIzena.setText(jokalari.getIzena());
-				textAbizena.setText(jokalari.getAbizena());
-				textNan.setText(jokalari.getNan());
-				textJaiotzeData.setText(jokalari.getJaiotzeData());
-				textJatorrizkoHerria.setText(jokalari.getJatorrizkoHerria());
-				
-				// Hautatutako jokalariaren generoa ikusi eta irrati-botoiak jarri.
-				if (jokalari.getSexua().equals("Emakumezkoa")) {
-					rdbtnEmakume.setSelected(true);
-					rdbtnGizkon.setSelected(false);
-				} else {
-					rdbtnGizkon.setSelected(true);
-					rdbtnEmakume.setSelected(false);
-				}
-				
-			}
-		});
-		listtaldekide.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		listtaldekide.setFont(new Font("Montserrat", Font.PLAIN, 12));
-		listtaldekide.setBounds(29, 146, 387, 272);
-		contentPane.add(listtaldekide);
-		//listtaldekide.setModel(Jokalaridlm);
-		
+		separatorTaldekide = new JSeparator();
+		separatorTaldekide.setBounds(29, 123, 176, 2);
+		contentPane.add(separatorTaldekide);
+
 		textIzena = new JTextField();
 		textIzena.setFont(new Font("Montserrat", Font.PLAIN, 12));
-		textIzena.setBounds(607, 101, 151, 19);
+		textIzena.setBounds(607, 90, 151, 19);
 		contentPane.add(textIzena);
 		textIzena.setColumns(10);
-		
+
 		lblIzena = new JLabel("Izena");
 		lblIzena.setFont(new Font("Montserrat", Font.PLAIN, 12));
-		lblIzena.setBounds(457, 105, 122, 13);
+		lblIzena.setBounds(457, 94, 122, 13);
 		contentPane.add(lblIzena);
-		
+
 		textAbizena = new JTextField();
 		textAbizena.setFont(new Font("Montserrat", Font.PLAIN, 12));
 		textAbizena.setColumns(10);
-		textAbizena.setBounds(607, 134, 151, 19);
+		textAbizena.setBounds(607, 123, 151, 19);
 		contentPane.add(textAbizena);
-		
+
 		lblAbizena = new JLabel("Abizena");
 		lblAbizena.setFont(new Font("Montserrat", Font.PLAIN, 12));
-		lblAbizena.setBounds(457, 138, 122, 13);
+		lblAbizena.setBounds(457, 127, 122, 13);
 		contentPane.add(lblAbizena);
-		
+
 		textJaiotzeData = new JTextField();
 		textJaiotzeData.setFont(new Font("Montserrat", Font.PLAIN, 12));
 		textJaiotzeData.setColumns(10);
-		textJaiotzeData.setBounds(607, 194, 151, 19);
+		textJaiotzeData.setBounds(607, 183, 151, 19);
 		contentPane.add(textJaiotzeData);
-		
+
 		lblJaiotzeData = new JLabel("Jaiotze Data");
 		lblJaiotzeData.setFont(new Font("Montserrat", Font.PLAIN, 12));
-		lblJaiotzeData.setBounds(457, 198, 122, 13);
+		lblJaiotzeData.setBounds(457, 187, 122, 13);
 		contentPane.add(lblJaiotzeData);
-		
+
 		textJatorrizkoHerria = new JTextField();
 		textJatorrizkoHerria.setFont(new Font("Montserrat", Font.PLAIN, 12));
 		textJatorrizkoHerria.setColumns(10);
-		textJatorrizkoHerria.setBounds(607, 227, 151, 19);
+		textJatorrizkoHerria.setBounds(607, 216, 151, 19);
 		contentPane.add(textJatorrizkoHerria);
-		
+
 		lblJatorrizkoHerria = new JLabel("Jatorrizko Herria");
 		lblJatorrizkoHerria.setFont(new Font("Montserrat", Font.PLAIN, 12));
-		lblJatorrizkoHerria.setBounds(457, 231, 122, 13);
+		lblJatorrizkoHerria.setBounds(457, 220, 122, 13);
 		contentPane.add(lblJatorrizkoHerria);
-		
+
 		lblSexua = new JLabel("Sexua");
 		lblSexua.setFont(new Font("Montserrat", Font.PLAIN, 12));
-		lblSexua.setBounds(457, 275, 122, 13);
+		lblSexua.setBounds(457, 264, 122, 13);
 		contentPane.add(lblSexua);
-		
+
 		rdbtnEmakume = new JRadioButton("Emakumezkoa");
 		rdbtnEmakume.setFont(new Font("Montserrat", Font.PLAIN, 12));
 		rdbtnEmakume.setBackground(new Color(255, 255, 255));
-		rdbtnEmakume.setBounds(483, 294, 122, 21);
+		rdbtnEmakume.setBounds(483, 283, 122, 21);
 		contentPane.add(rdbtnEmakume);
-		
-		rdbtnGizkon = new JRadioButton("Gizkonezkoa");
-		rdbtnGizkon.setFont(new Font("Montserrat", Font.PLAIN, 12));
-		rdbtnGizkon.setBackground(Color.WHITE);
-		rdbtnGizkon.setBounds(636, 294, 122, 21);
-		contentPane.add(rdbtnGizkon);
-		
+
+		rdbtnGizon = new JRadioButton("Gizonezkoa");
+		rdbtnGizon.setFont(new Font("Montserrat", Font.PLAIN, 12));
+		rdbtnGizon.setBackground(Color.WHITE);
+		rdbtnGizon.setBounds(636, 283, 122, 21);
+		contentPane.add(rdbtnGizon);
+
 		btnKendu = new JButton("Kendu");
-		//Gehitu ekintza-entzule bat botoian.
-		btnKendu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				//Lortu hautatutako aurkibidea jokalarien zerrendan.
-				int selection = listtaldekide.getSelectedIndex();
-				//Get the selected player in the list
-				Taldekide taldekide_selected = listtaldekide.getSelectedValue();
-				//Lortu combo kutxako talde hautatua.
-				Talde talde_selected = (Talde) comboBoxTalde.getSelectedItem();
-				
-	
-				//Egiaztatu jokalari bat hautatu duten.
-				if (!listtaldekide.isSelectionEmpty()) {
-				  //Kendu hautatutako jokalaria jokalarien zerrendatik.
-				  Jokalaridlm.remove(selection);
-				  //Kendu hautatutako jokalaria hautatutako taldetik
-				  talde_selected.rmvJokalariak(taldekide_selected);
-				} else {
-				  //Erakuts ezazu mezu-elkarrizketa bat jokalaririk hautatu ez bada.
-				  JOptionPane.showMessageDialog(contentPane, "Ezin da ezabatu, hautatu jokalari bat!");
-				}
-			}
-		});
+		btnKendu.addActionListener(this);
 		btnKendu.setBorderPainted(false);
 		btnKendu.setBorder(new EmptyBorder(1, 1, 1, 1));
 		btnKendu.setForeground(new Color(255, 255, 255));
 		btnKendu.setBackground(new Color(104, 111, 119));
 		btnKendu.setFont(new Font("Montserrat", Font.PLAIN, 16));
-		btnKendu.setBounds(177, 431, 85, 33);
+		btnKendu.setBounds(177, 420, 85, 33);
 		contentPane.add(btnKendu);
-		
-		btnSartu = new JButton("Aldatu");
-		btnSartu.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				// Get the values of the text fields
-				String izena = textIzena.getText();
-				String abizen = textAbizena.getText();
-				String date = textJaiotzeData.getText();
-				String herri = textJatorrizkoHerria.getText();
-				String sexo = "non";
-				String rol = "Jokalaria";
-				String nan = textNan.getText();
 
-				if (rdbtnEmakume.isSelected()) {
-					sexo = "Emakumezkoa";
-				} else if (rdbtnGizkon.isSelected()) {
-				    sexo = "Gizkonezkoa";
-				}
-				
-				Taldekide Jokalari = new Taldekide(nan, izena, abizen, date, herri, sexo, rol);
-				
-				
-				Talde selected = (Talde) comboBoxTalde.getSelectedItem();
-				
-				if (selected == null) {
-					return;
-				}
-				
-				// Zerrendan jokalaririk aukeratzen ez bada, mezu bat erakutsi.
-				if (listtaldekide.isSelectionEmpty()) {
-					JOptionPane.showMessageDialog(contentPane, "Hautatu jokalari bat aldatzeko!");
-					
-				} else {
-					
-					// Eremuren bat hutsik badago edo "izena" eremuaren luzera 15 karakteretik gorakoa bada, erakutsi mezu bat.
-					if (izena.isEmpty() || abizen.isEmpty() || nan.isEmpty() || date.isEmpty() || herri.isEmpty() || sexo == null) {
-						JOptionPane.showMessageDialog(contentPane, "Mesedez, bete elementu guztiak!");
-						
-					} else if (izena.length() >15) {
-						JOptionPane.showMessageDialog(contentPane, "Izena 15 karaktere gehienez eduki behar du!");
-						
-					} else if (abizen.length() > 40) {
-						JOptionPane.showMessageDialog(contentPane, "Abizena 40 karaktere gehienez eduki behar du!");
-						
-					} else if (nan.length() != 9 || !nan.substring(0,7).matches("[0-9]+") || !nan.substring(8,9).matches("[A-Za-z]")) {
-						JOptionPane.showMessageDialog(contentPane, "Sartu Nan kode erabilgarri bat: 8 zenbaki karaktere 1!");
-						/* NAN kodearen eremuak formatu zuzena ez badu (9 karaktere,
-						 *  lehen 7 karaktereak digituak dira eta azken karakterea letra bat da),
-						 *  erakutsi formatu zuzena adierazten duen mezu-elkarrizketa bat.*/
-						
-					}else if (date.length() >10) {
-						JOptionPane.showMessageDialog(contentPane, "Data baligarri bat sartu behar duzu! xx/xx/xxxx");
-						
-					} else if (herri.length() >25) {
-						JOptionPane.showMessageDialog(contentPane, "Herri baliagarri bat sartu, 25 karaktere baino gutxiago eduki behar du!");
-						
-					} else {
-						// Eremu guztiak baliozkoak badira, kendu aurreko jokalaria zerrendatik eta gehitu jokalari berria.
-						selected.rmvJokalariak(listtaldekide.getSelectedValue());
-						
-						selected.addJokalariak(Jokalari);
-						
-						// Argitu eta eguneratu jokalarien zerrenda.
-						Jokalaridlm.clear();
-						
-						for (int i = 0; i < selected.getJokalariak().size(); i++) {
-							Jokalaridlm.addElement(selected.getJokalariak().get(i));
-						}
-						
-						// Taldeentzako aldi baterako zerrenda-eredu bat sortu eta dagoen fitxategia gainidatzi eguneratutako informazioarekin.
-						ArrayList<Talde> temp = new ArrayList<Talde>();
-						
-						for (int i = 0; i < comboBoxTalde.getItemCount(); i++) {
-							temp.add(comboBoxTalde.getItemAt(i));
-							
-						}
-						gordeIrakurri.gordeTalde(temp, "taldeak.txt");
-					}
-				} 
-				
-			}
-		});
-		btnSartu.setForeground(new Color(255, 255, 255));
-		btnSartu.setFont(new Font("Montserrat", Font.PLAIN, 16));
-		btnSartu.setBorder(null);
-		btnSartu.setBackground(new Color(0, 107, 183));
-		btnSartu.setBounds(530, 358, 139, 33);
-		contentPane.add(btnSartu);
-		
+		btnAldatu = new JButton("Aldatu");
+		btnAldatu.addActionListener(this);
+		btnAldatu.setForeground(new Color(255, 255, 255));
+		btnAldatu.setFont(new Font("Montserrat", Font.PLAIN, 16));
+		btnAldatu.setBorder(null);
+		btnAldatu.setBackground(new Color(0, 107, 183));
+		btnAldatu.setBounds(606, 420, 139, 33);
+		contentPane.add(btnAldatu);
+
 		btnAtzera = new JButton("ATZERA");
-		btnAtzera.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// "SortuTaldea" deitu ikasgelako metodo nagusiari.
-				adminWindow m = new adminWindow();
-				m.setVisible(true);
-				m.setBounds(100, 100, 800, 500);
-
-				dispose();
-
-			}
-		});
+		btnAtzera.addActionListener(this);
 		btnAtzera.setContentAreaFilled(false);
 		btnAtzera.setForeground(new Color(0, 0, 0));
 		btnAtzera.setFont(new Font("Montserrat", Font.PLAIN, 16));
 		btnAtzera.setBorderPainted(false);
 		btnAtzera.setBorder(new EmptyBorder(1, 1, 1, 1));
 		btnAtzera.setBackground(new Color(104, 111, 119));
-		btnAtzera.setBounds(673, 42, 85, 33);
+		btnAtzera.setBounds(673, 31, 85, 33);
 		contentPane.add(btnAtzera);
-		
-		// Konbo kutxa berri bat sortu, taldeak erakusteko.
-		comboBoxTalde = new JComboBox<Talde>();
 
-		// Gehitu ekintza-entzule bat talde bat aukeratzean erabili beharreko konbo-kaxara.
-		comboBoxTalde.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				// Lortu combo kutxako talde hautatua.
-				Talde selected = (Talde) comboBoxTalde.getSelectedItem();
-				
-				// Egiaztatu ea ez den talderik hautatu.
-				if (selected == null) {
-					// If no team was selected, return without doing anything
-					return ;
-				}
-				
-				//Argitu jokalarien zerrenda eredua.
-				Jokalaridlm.clear();
-				
-				// Gehitu hautatutako taldeko jokalari guztiak jokalarien zerrendan.
-				for (int i = 0; i < selected.getJokalariak().size(); i++) {
-					Jokalaridlm.addElement(selected.getJokalariak().get(i));
-				}
-				
-			}
-		});
-		comboBoxTalde.setFont(new Font("Montserrat", Font.PLAIN, 12));
-		comboBoxTalde.setEditable(true);
-		comboBoxTalde.setBounds(229, 106, 187, 30);
-		contentPane.add(comboBoxTalde);
-		
 		lblnan = new JLabel("Nan");
 		lblnan.setFont(new Font("Dialog", Font.PLAIN, 12));
-		lblnan.setBounds(457, 167, 122, 13);
+		lblnan.setBounds(457, 156, 122, 13);
 		contentPane.add(lblnan);
-		
+
 		textNan = new JTextField();
 		textNan.setFont(new Font("Dialog", Font.PLAIN, 12));
 		textNan.setColumns(10);
-		textNan.setBounds(607, 163, 151, 19);
+		textNan.setBounds(607, 152, 151, 19);
 		contentPane.add(textNan);
+
+		lblPostu = new JLabel("Lanpostua");
+		lblPostu.setFont(new Font("Montserrat", Font.PLAIN, 12));
+		lblPostu.setBounds(457, 317, 122, 13);
+		contentPane.add(lblPostu);
+
+		rdbtnKoordinatzaile = new JRadioButton("Koordinatzaile");
+		rdbtnKoordinatzaile.setFont(new Font("Montserrat", Font.PLAIN, 12));
+		rdbtnKoordinatzaile.setBackground(Color.WHITE);
+		rdbtnKoordinatzaile.setBounds(483, 341, 122, 21);
+		contentPane.add(rdbtnKoordinatzaile);
+
+		rdbtnEntrenatzaile = new JRadioButton("Entrenatzaile");
+		rdbtnEntrenatzaile.setFont(new Font("Montserrat", Font.PLAIN, 12));
+		rdbtnEntrenatzaile.setBackground(Color.WHITE);
+		rdbtnEntrenatzaile.setBounds(636, 341, 122, 21);
+		contentPane.add(rdbtnEntrenatzaile);
+
+		rdbtnFisioterapeuta = new JRadioButton("Fisioterapeuta");
+		rdbtnFisioterapeuta.setFont(new Font("Montserrat", Font.PLAIN, 12));
+		rdbtnFisioterapeuta.setBackground(Color.WHITE);
+		rdbtnFisioterapeuta.setBounds(483, 374, 122, 21);
+		contentPane.add(rdbtnFisioterapeuta);
+
+		textKolegiatuZnb = new JTextField();
+		textKolegiatuZnb.setText("Kolegiatu Znb");
+		textKolegiatuZnb.setForeground(Color.LIGHT_GRAY);
+		textKolegiatuZnb.setFont(new Font("Montserrat", Font.PLAIN, 12));
+		textKolegiatuZnb.setEnabled(false);
+		textKolegiatuZnb.setColumns(10);
+		textKolegiatuZnb.setBounds(636, 368, 122, 27);
+		contentPane.add(textKolegiatuZnb);
+
+		comboTaldeak = new JComboBox<String>();
+		comboTaldeak.setFont(new Font("Montserrat", Font.PLAIN, 10));
+		comboTaldeak.addActionListener(this);
+		comboTaldeak.setBounds(251, 90, 176, 27);
+		contentPane.add(comboTaldeak);
+
+		listTaldekide = new JList<Taldekide>();
+		listTaldekide.addMouseListener(this);
+		listTaldekide.setFont(new Font("Montserrat", Font.PLAIN, 12));
+		listTaldekide.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		listTaldekide.setBounds(29, 135, 176, 260);
+		contentPane.add(listTaldekide);
+
+		dlmTaldekide = new DefaultListModel<Taldekide>();
+		listTaldekide.setModel(dlmTaldekide);
 		
-		// Begiratu ea taldeen zerrenda hutsik dagoen.
-		if (taldeak.size() == 0) {
-			// Zerrenda hutsik badago, exekutatu SortuTaldea klasearen metodo nagusia eta prestatu egungo markoa.
-			sortuTaldea.main(null);
-			frame.dispose();
-			
-		} else {
-		// Zerrenda hutsik ez badago, begiztatu zerrenda eta gehitu elementu bakoitza comboBoxTalde combo kutxara.
-			for (int i = 0; i < taldeak.size(); i++) {
-				comboBoxTalde.addItem(taldeak.get(i));
+		btnAñadir = new JButton("Gehitu");
+		btnAñadir.addActionListener(this);
+		btnAñadir.setForeground(Color.WHITE);
+		btnAñadir.setFont(new Font("Montserrat", Font.PLAIN, 16));
+		btnAñadir.setBorder(null);
+		btnAñadir.setBackground(new Color(0, 107, 183));
+		btnAñadir.setBounds(478, 420, 101, 33);
+		contentPane.add(btnAñadir);
+
+		// Kargatu taldeak
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			Connection konexioa = DriverManager.getConnection("jdbc:mysql://localhost/erronka_t4", "root", "");
+			Statement st = konexioa.createStatement();
+			ResultSet rs = st.executeQuery("SELECT * FROM talde");
+			while (rs.next()) {
+				comboTaldeak.addItem((String) rs.getObject("TaldeIzena"));
 			}
-		}	
+			rs.close();
+			st.close();
+			konexioa.close();
+		} catch (SQLException | ClassNotFoundException sqle) {
+			sqle.printStackTrace();
+		}
+	}
+
+	@Override
+	public void focusGained(FocusEvent e) {
+
+
+	}
+
+	@Override
+	public void focusLost(FocusEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		Object o = e.getSource();
+
+		if (o == comboTaldeak) {
+			dlmTaldekide.clear();
+			String taldea = (String) comboTaldeak.getSelectedItem();
+			String statement = "SELECT * FROM jokalariak WHERE TaldeID = (SELECT TaldeID FROM talde WHERE TaldeIzena = '"
+					+ taldea + "');";
+			try {
+				Class.forName("com.mysql.jdbc.Driver");
+				Connection konexioa = DriverManager.getConnection("jdbc:mysql://localhost/erronka_t4", "root", "");
+				Statement st = konexioa.createStatement();
+				ResultSet rs = st.executeQuery(statement);
+				while (rs.next()) {
+
+					String jaiotze = Integer.toString((Integer) rs.getObject("JJaioteUrtea"));
+
+					Taldekide T = new Taldekide((String) rs.getObject("JokalariNAN"), (String) rs.getObject("JIzen"),
+							(String) rs.getObject("JAbizena"), jaiotze, (String) rs.getObject("JJatorrizkoHerria"),
+							(String) rs.getObject("JSexua"), "jokalari");
+					dlmTaldekide.addElement(T);
+				}
+				rs.close();
+				st.close();
+				konexioa.close();
+			} catch (SQLException | ClassNotFoundException sqle) {
+				sqle.printStackTrace();
+			}
+		}
+		
+		if (o == btnKendu) {
+			Taldekide aukeratua = listTaldekide.getSelectedValue();
+			int index = listTaldekide.getSelectedIndex();
+			String statement = "DELETE FROM jokalariak WHERE JokalariNAN = '" + aukeratua.getNan() + "';";
+			System.out.println(statement);
+			
+			try {				
+				Class.forName("com.mysql.jdbc.Driver");
+				Connection konexioa = DriverManager.getConnection("jdbc:mysql://localhost/erronka_t4", "root", "");
+				Statement st = konexioa.createStatement();
+				st.executeUpdate(statement);
+				
+				st.close();
+				konexioa.close();
+			} catch (SQLException | ClassNotFoundException e1) {
+
+				e1.printStackTrace();
+			}
+			
+			dlmTaldekide.remove(index);
+			listTaldekide.setSelectedIndex(0);
+		}
+		
+		if (o == btnAldatu) {
+			Taldekide aukeratua = listTaldekide.getSelectedValue();
+			String newNAN = textNan.getText();
+			String newIzen = textIzena.getText();
+			String newAbizen = textAbizena.getText();
+			String newHerri = textJatorrizkoHerria.getText();
+			int newUrte = Integer.parseInt(textJaiotzeData.getText());
+			String newSexua = "";
+			if (rdbtnEmakume.isSelected()){
+				newSexua = "Emakumea";
+			}else {
+				newSexua = "Gizona";
+			}
+			String statement = "UPDATE jokalariak "
+					+ "SET JokalariNAN = '" + newNAN + "', JIzen = '" + newIzen + "', JAbizena = '"+ newAbizen + "', JJatorrizkoherria = '" + newHerri + "', JSexua = '" + newSexua + "', JJaioteUrtea = '" + newUrte + "'."
+					+ "WHERE JokalariNAN = '" + aukeratua.getNan() + "';";
+			
+			try {				
+				Class.forName("com.mysql.jdbc.Driver");
+				Connection konexioa = DriverManager.getConnection("jdbc:mysql://localhost/erronka_t4", "root", "");
+				Statement st = konexioa.createStatement();
+				st.executeUpdate(statement);
+				
+				st.close();
+				konexioa.close();
+			} catch (SQLException | ClassNotFoundException e1) {
+
+				e1.printStackTrace();
+			}
+		}
+		
+		if (o == btnAñadir) {
+			String newNAN = textNan.getText();
+			String newIzen = textIzena.getText();
+			String newAbizen = textAbizena.getText();
+			String newHerri = textJatorrizkoHerria.getText();
+			int newUrte = Integer.parseInt(textJaiotzeData.getText());
+			String newSexua = "";
+			String talde = (String) comboTaldeak.getSelectedItem();
+			String taldeKode = "";
+			if (rdbtnEmakume.isSelected()){
+				newSexua = "Emakumea";
+			}else {
+				newSexua = "Gizona";
+			}
+			switch (talde) {
+			case "Boston Celtics":
+				taldeKode = "BOCE";
+				break;
+			case "Brooklyn Nets":
+				taldeKode = "BRKN";
+				break;
+			case "Chicago Bulls":
+				taldeKode = "CHBU";
+				break;
+			case "Dallas Mavericks":
+				taldeKode = "DAMV";
+				break;
+			case "Golden State Warriors":
+				taldeKode = "GSWR";
+				break;
+			case "Los Angeles Lakers":
+				taldeKode = "LALK";
+				break;
+			case "Milwaukee Bucks":
+				taldeKode = "MWBK";
+				break;
+			case "Toronto Raptors":
+				taldeKode = "TORP";
+				break;
+			}
+			
+			Taldekide T = new Taldekide(textNan.getText(), textIzena.getText(), textAbizena.getText(), textJaiotzeData.getText(), textJatorrizkoHerria.getText(), newSexua, "jokalari");
+			 dlmTaldekide.addElement(T);
+			
+			
+			String statement = "INSERT INTO jokalariak "
+					+ "VALUES '" + newNAN + "', '" + newIzen + "', '"+ newAbizen + "', '" + newHerri + "', '" + newSexua + "', '" + newUrte + "', " + taldeKode +"' ;";
+			
+			try {				
+				Class.forName("com.mysql.jdbc.Driver");
+				Connection konexioa = DriverManager.getConnection("jdbc:mysql://localhost/erronka_t4", "root", "");
+				Statement st = konexioa.createStatement();
+				st.executeUpdate(statement);
+				
+				st.close();
+				konexioa.close();
+			} catch (SQLException | ClassNotFoundException e1) {
+				e1.printStackTrace();
+			}
+		}
+		if (o == btnAtzera) {
+			hasiera m = new hasiera();
+			m.setVisible(true);
+			m.setBounds(100, 100, 800, 500);
+
+			dispose();
+			
+		}
+
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		Object o = e.getSource();
+		if (o == listTaldekide) {
+			Taldekide aukeratua = listTaldekide.getSelectedValue();
+
+			textAbizena.setText(aukeratua.getAbizena());
+			textIzena.setText(aukeratua.getIzena());
+			textJaiotzeData.setText(aukeratua.getJaiotzeData());
+			textJatorrizkoHerria.setText(aukeratua.getJatorrizkoHerria());
+			textNan.setText(aukeratua.getNan());
+			if (aukeratua.getSexua().equals("Gizona")) {
+				rdbtnGizon.setSelected(true);
+				rdbtnEmakume.setSelected(false);
+			} else {
+				rdbtnGizon.setSelected(false);
+				rdbtnEmakume.setSelected(true);
+			}
+		}
+
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+
 	}
 }
