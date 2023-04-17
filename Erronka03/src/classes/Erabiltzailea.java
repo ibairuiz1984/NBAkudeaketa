@@ -2,24 +2,28 @@ package classes;
 
 import java.io.Serializable;
 import java.util.Objects;
+import javax.persistence.*;
 
-public class Erabiltzailea implements Serializable{
-private static final long serialVersionUID = 3516386181612309905L;
-	
+@Entity
+public class Erabiltzailea implements Serializable {
+	private static final long serialVersionUID = 3516386181612309905L;
+	@Id
+	@GeneratedValue
+	private long idErabiltzaile;
 	private String erabiltzaile;
 	public boolean profila;
 	private String pasahitza;
 	private String taldea;
 
-	public Erabiltzailea (String erabiltzailea, String pasahitza){
-		this.erabiltzaile=erabiltzailea;
-		this.pasahitza=pasahitza;
+	public Erabiltzailea(String erabiltzailea, String pasahitza) {
+		this.erabiltzaile = erabiltzailea;
+		this.pasahitza = pasahitza;
 		this.profila = true;
 	}
-	
-	public Erabiltzailea (String erabiltzailea, String pasahitza, String taldea){
-		this.erabiltzaile=erabiltzailea;
-		this.pasahitza=pasahitza;
+
+	public Erabiltzailea(String erabiltzailea, String pasahitza, String taldea) {
+		this.erabiltzaile = erabiltzailea;
+		this.pasahitza = pasahitza;
 		this.profila = false;
 		this.taldea = taldea;
 	}
@@ -27,12 +31,15 @@ private static final long serialVersionUID = 3516386181612309905L;
 	public String getErabiltzaile() {
 		return erabiltzaile;
 	}
+
 	public String getPasahitza() {
 		return pasahitza;
 	}
+
 	public boolean getProfila() {
 		return profila;
 	}
+
 	public boolean isProfila() {
 		return profila;
 	}
@@ -40,7 +47,6 @@ private static final long serialVersionUID = 3516386181612309905L;
 	public boolean setProfila(boolean profila) {
 		return this.profila = profila;
 	}
-	
 
 	public String getTaldea() {
 		return taldea;
@@ -69,13 +75,9 @@ private static final long serialVersionUID = 3516386181612309905L;
 
 	@Override
 	public String toString() {
-		return "Erabiltzailea [erabiltzaile=" + erabiltzaile + ", profila=" + profila + ", pasahitza=" + pasahitza
-				+ ", taldea=" + taldea + "]";
+		return "Erabiltzailea [idErabiltzaile=" + idErabiltzaile + ", erabiltzaile=" + erabiltzaile + ", profila="
+				+ profila + ", pasahitza=" + pasahitza + ", taldea=" + taldea + "]";
 	}
-	
-	
-	
-	
 
 	
 

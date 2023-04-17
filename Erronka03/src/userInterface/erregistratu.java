@@ -16,6 +16,9 @@ import javax.swing.JRadioButton;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
 import javax.swing.JPasswordField;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import java.awt.event.ActionListener;
@@ -59,6 +62,7 @@ public class erregistratu extends JFrame implements ActionListener, FocusListene
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
+
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -140,7 +144,7 @@ public class erregistratu extends JFrame implements ActionListener, FocusListene
 		comboBoxTalde.setFont(new Font("Montserrat", Font.PLAIN, 12));
 		comboBoxTalde.setBounds(24, 376, 284, 27);
 		contentPane.add(comboBoxTalde);
-		
+
 		ArrayList<Talde> taldeak = gordeIrakurri.irakurriTalde("taldeakStable.txt");
 		if (taldeak.size() > 0) {
 			for (int i = 0; i < taldeak.size(); i++) {
@@ -150,7 +154,6 @@ public class erregistratu extends JFrame implements ActionListener, FocusListene
 		} else {
 			comboBoxTalde.addItem("Oraindik ez dago talderik sortuta");
 		}
-		
 
 		btnSortu = new JButton("Sortu");
 		btnSortu.addActionListener(this);
@@ -191,7 +194,6 @@ public class erregistratu extends JFrame implements ActionListener, FocusListene
 		rdbtnErabitzailea.setBackground(Color.WHITE);
 		rdbtnErabitzailea.setBounds(208, 295, 175, 21);
 		contentPane.add(rdbtnErabitzailea);
-
 
 		rdbtnAdmin.addActionListener(this);
 		rdbtnAdmin.setBackground(new Color(255, 255, 255));
@@ -234,6 +236,7 @@ public class erregistratu extends JFrame implements ActionListener, FocusListene
 		Object o = e.getSource();
 
 		if (o == btnSortu) {
+			DatuakSartu();
 			ArrayList<Erabiltzailea> E = gordeIrakurri.irakurriErabiltzaile("erabiltzaileak.txt");
 			Boolean exists = false;
 			String izena = textIzenaTalde.getText().trim();
@@ -248,26 +251,27 @@ public class erregistratu extends JFrame implements ActionListener, FocusListene
 							exists = true;
 						}
 					}
-					
+
 					if (!exists) {
-						if(rdbtnAdmin.isSelected()) {
+						if (rdbtnAdmin.isSelected()) {
 							Erabiltzailea E1 = new Erabiltzailea(izena, pasahitza);
 							E.add(E1);
 						} else {
 							Erabiltzailea E1 = new Erabiltzailea(izena, pasahitza, taldea);
 							E.add(E1);
 						}
-						
-						gordeIrakurri.gordeErabiltzaile(E,"erabiltzaileak.txt");
+
+						gordeIrakurri.gordeErabiltzaile(E, "erabiltzaileak.txt");
 						hasiera m = new hasiera();
 						m.setVisible(true);
 						m.setBounds(100, 100, 800, 500);
 
 						dispose();
 					} else {
-						JOptionPane.showMessageDialog(null, "Erabiltzaile izena existitzen da jada, aukeratu beste izen bat mesedez");
+						JOptionPane.showMessageDialog(null,
+								"Erabiltzaile izena existitzen da jada, aukeratu beste izen bat mesedez");
 					}
-					
+
 				} else {
 					JOptionPane.showMessageDialog(null, "Pasahitzak berdinak izan behar dira");
 				}
@@ -281,36 +285,53 @@ public class erregistratu extends JFrame implements ActionListener, FocusListene
 
 			dispose();
 		}
-		
-		if (o ==rdbtnAdmin) {
-			if (rdbtnAdmin.isSelected()){
+
+		if (o == rdbtnAdmin) {
+			if (rdbtnAdmin.isSelected()) {
 				rdbtnErabitzailea.setSelected(false);
 				comboBoxTalde.setEnabled(false);
-			}
-			else if (!rdbtnErabitzailea.isSelected() && !rdbtnAdmin.isSelected()) {
+			} else if (!rdbtnErabitzailea.isSelected() && !rdbtnAdmin.isSelected()) {
 				rdbtnAdmin.setSelected(true);
 			}
-			
+
 		}
-		
-		if (o==rdbtnErabitzailea) {
-			if (rdbtnErabitzailea.isSelected()){
+
+		if (o == rdbtnErabitzailea) {
+			if (rdbtnErabitzailea.isSelected()) {
 				comboBoxTalde.setEnabled(true);
 				rdbtnAdmin.setSelected(false);
-			}else if (!rdbtnErabitzailea.isSelected() && !rdbtnAdmin.isSelected()) {
+			} else if (!rdbtnErabitzailea.isSelected() && !rdbtnAdmin.isSelected()) {
 				rdbtnAdmin.setSelected(true);
 			}
-			
+
 		}
 
 	}
-	
+
 	public boolean datuakSartuta() {
-		if (!textIzenaTalde.getText().isEmpty() && !Password1.getPassword().toString().isEmpty() && !Password2.getPassword().toString().isEmpty()) {
+		if (!textIzenaTalde.getText().isEmpty() && !Password1.getPassword().toString().isEmpty()
+				&& !Password2.getPassword().toString().isEmpty()) {
 			return true;
-		}else {
+		} else {
 			JOptionPane.showMessageDialog(null, "Beharrezkoa da datu guztiak sartzea");
 			return false;
 		}
+	}
+
+	public void DatuakSartu() {
+		// Data-basearekin konektatu
+		// Data-basea eratu baldin eta ez badago
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory("$objectdb/db/Erabiltzaileak.odb");
+		EntityManager em = emf.createEntityManager();
+		em.getTransaction().begin();
+		String izena = textIzenaTalde.getText().trim();
+		String pasahitza = new String(Password1.getPassword());
+		String pasahitza2 = new String(Password2.getPassword());
+		String taldea = comboBoxTalde.getName();
+		boolean isAdmin = rdbtnAdmin.isSelected();
+		Erabiltzailea E1 = new Erabiltzailea(izena, pasahitza, taldea);
+		em.persist(E1);
+		em.getTransaction().commit();
+
 	}
 }

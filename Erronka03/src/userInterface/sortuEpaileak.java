@@ -38,9 +38,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.ParseException;
 
-public class sortuEpaileak extends JFrame
-		implements ActionListener, FocusListener {
+public class sortuEpaileak extends JFrame implements ActionListener, FocusListener {
 
 	private static final long serialVersionUID = -769897967527414239L;
 	private JPanel contentPane;
@@ -65,7 +70,7 @@ public class sortuEpaileak extends JFrame
 
 	private JList<Epaile> listEpaile;
 	private DefaultListModel<Epaile> dlmEpaile;
-	
+
 	private JLabel lblEpaileak;
 	private JSeparator separatorEntrenatzaile;
 	private JTextField textNan;
@@ -73,7 +78,6 @@ public class sortuEpaileak extends JFrame
 	private String sexua;
 	private String rola = "Jokalaria";
 	private boolean fisio = false;
-	private JTextField textEpaileZenbakia;
 
 	/**
 	 * Launch the application.
@@ -120,7 +124,6 @@ public class sortuEpaileak extends JFrame
 		separatorEntrenatzaile.setBounds(27, 122, 158, 2);
 		contentPane.add(separatorEntrenatzaile);
 
-				
 		listEpaile = new JList<Epaile>();
 		listEpaile.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		listEpaile.setFont(new Font("Montserrat", Font.PLAIN, 12));
@@ -129,12 +132,6 @@ public class sortuEpaileak extends JFrame
 
 		dlmEpaile = new DefaultListModel<Epaile>();
 		listEpaile.setModel(dlmEpaile);
-		
-		//Kargatu zerrendako izenak
-		for (int i = 0; i < gordeIrakurri.irakurriEpaile("epaile.txt").size(); i++) {
-			dlmEpaile.addElement(gordeIrakurri.irakurriEpaile("epaile.txt").get(i));
-		}
-
 
 		textIzena = new JTextField();
 		textIzena.addFocusListener(this);
@@ -255,18 +252,9 @@ public class sortuEpaileak extends JFrame
 		lblNanZnb.setFont(new Font("Montserrat", Font.PLAIN, 12));
 		lblNanZnb.setBounds(455, 157, 122, 13);
 		contentPane.add(lblNanZnb);
-		
-		lblEpaileZenbakia = new JLabel("Epaile Zenbakia");
-		lblEpaileZenbakia.setFont(new Font("Montserrat", Font.PLAIN, 12));
-		lblEpaileZenbakia.setBounds(455, 258, 122, 13);
-		contentPane.add(lblEpaileZenbakia);
-		
-		textEpaileZenbakia = new JTextField();
-		textEpaileZenbakia.addFocusListener(this);
-		textEpaileZenbakia.setFont(new Font("Montserrat", Font.PLAIN, 12));
-		textEpaileZenbakia.setColumns(10);
-		textEpaileZenbakia.setBounds(605, 254, 151, 19);
-		contentPane.add(textEpaileZenbakia);
+
+		datuakKargatu();
+
 	}
 
 	@Override
@@ -274,49 +262,51 @@ public class sortuEpaileak extends JFrame
 		Object o = e.getSource();
 
 		if (o == btnSortu) {
+			datuakSortu();
 
 			if (datuakBeteta()) {
 				boolean badago = false;
 
-					Epaile Epaile = new Epaile(textNan.getText(), textIzena.getText(), textAbizena.getText(),
-							textJaiotzeData.getText(), textJatorrizkoHerria.getText(), sexua, textEpaileZenbakia.getText());
-					//Zerrenda hutsik ez badago begiratu ea objektua jada dagoen
-					if (!dlmEpaile.isEmpty()) {
+				Epaile Epaile = new Epaile(textNan.getText(), textIzena.getText(), textAbizena.getText(),
+						textJaiotzeData.getText(), textJatorrizkoHerria.getText(), sexua);
+				// Zerrenda hutsik ez badago begiratu ea objektua jada dagoen
+				if (!dlmEpaile.isEmpty()) {
+					for (int i = 0; i < dlmEpaile.size(); i++) {
+						if (Epaile.equals(dlmEpaile.get(i))) {
+							badago = true;
+						}
+					}
+					// Objektua ez badago zerrendan, alfabetikoki sartu
+					if (!badago) {
+						int pos = dlmEpaile.size();
+
 						for (int i = 0; i < dlmEpaile.size(); i++) {
-							if (Epaile.equals(dlmEpaile.get(i))) {
-								badago = true;
+							if (Epaile.compareTo(dlmEpaile.get(i)) < 0) {
+								pos = i;
+								break;
 							}
 						}
-						//Objektua ez badago zerrendan, alfabetikoki sartu
-						if (!badago) {
-							int pos = dlmEpaile.size();
 
-							for (int i = 0; i < dlmEpaile.size(); i++) {
-								if (Epaile.compareTo(dlmEpaile.get(i)) < 0) {
-									pos = i;
-									break;
-								}
-							}
-
-							dlmEpaile.add(pos, Epaile);
-							gordeIrakurri.gordeEpaile(dlmEpaile, "epaile.txt");
-
-						} else {
-							JOptionPane.showMessageDialog(contentPane, "Epaile hau sartuta dago jada.");
-						}
-
-					//Zerrenda hutsik badago objektua sartu
-					} else {
-						dlmEpaile.addElement(Epaile);
+						dlmEpaile.add(pos, Epaile);
 						gordeIrakurri.gordeEpaile(dlmEpaile, "epaile.txt");
+
+					} else {
+						JOptionPane.showMessageDialog(contentPane, "Epaile hau sartuta dago jada.");
 					}
 
-				
+					// Zerrenda hutsik badago objektua sartu
+				} else {
+					dlmEpaile.addElement(Epaile);
+					gordeIrakurri.gordeEpaile(dlmEpaile, "epaile.txt");
+				}
+
 			}
 		}
 
 		if (o == btnEzabatu) {
-			//Lau zerrendetatik ezabatzeko
+
+			datuakEzabatu();
+			// Lau zerrendetatik ezabatzeko
 
 			int index = listEpaile.getSelectedIndex();
 
@@ -339,14 +329,16 @@ public class sortuEpaileak extends JFrame
 			dispose();
 
 		}
+		
 	}
 
 	// Datuak ondo dauden kontrolatzeko metodoa
 	private boolean datuakBeteta() {
-		//izena, abizena, nan, jaiote urtea eta jatorrizko herria idatzi dituela kontrolatzeko
+		// izena, abizena, nan, jaiote urtea eta jatorrizko herria idatzi dituela
+		// kontrolatzeko
 		if (!textIzena.getText().isEmpty() && !textAbizena.getText().isEmpty() && !textNan.getText().isEmpty()
-				&& !textJatorrizkoHerria.getText().isEmpty() && !textJaiotzeData.getText().isEmpty() && !textEpaileZenbakia.getText().isEmpty()) {
-			//sexua aukeratu duela kontrolatzeko
+				&& !textJatorrizkoHerria.getText().isEmpty() && !textJaiotzeData.getText().isEmpty()) {
+			// sexua aukeratu duela kontrolatzeko
 			if (rdbtnEmakume.isSelected() || rdbtnGizkon.isSelected()) {
 				return true;
 			} else {
@@ -358,12 +350,11 @@ public class sortuEpaileak extends JFrame
 			return false;
 		}
 	}
-	
 
 	@Override
 	public void focusGained(FocusEvent e) {
 		Object o = e.getSource();
-		
+
 		if (o == textIzena) {
 			textIzena.setText("");
 		}
@@ -376,18 +367,103 @@ public class sortuEpaileak extends JFrame
 		if (o == textJatorrizkoHerria) {
 			textJatorrizkoHerria.setText("");
 		}
-		if (o == textEpaileZenbakia) {
-			textEpaileZenbakia.setText("");
-		}
+
 		if (o == textNan) {
 			textNan.setText("");
 		}
-		
+
 	}
 
 	@Override
 	public void focusLost(FocusEvent e) {
 		// TODO Auto-generated method stub
-		
+
+	}
+
+	public void datuakKargatu() {
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			Connection konexioa = DriverManager.getConnection("jdbc:mysql://localhost/erronka_t4", "root", "");
+			Statement st = konexioa.createStatement();
+			ResultSet rs = st.executeQuery("SELECT * FROM epailea");
+
+			while (rs.next()) {
+
+				String urtea = Integer.toString((Integer) rs.getObject("EPJaioteUrtea"));
+				Epaile E = new Epaile((String) rs.getObject("EpaileaNAN"), (String) rs.getObject("EPIzen"),
+						(String) rs.getObject("EPAbizen"), urtea, (String) rs.getObject("EPJatorrizkoHerria"),
+						(String) rs.getObject("EPSexua"));
+				dlmEpaile.addElement(E);
+
+			}
+			konexioa.close();
+
+		} catch (SQLException | ClassNotFoundException sqle) {
+			// ez baldin bada konexioa era egokian egin
+			sqle.printStackTrace();
+			System.out.println("Konexio errorea");
+		}
+	}
+
+	public void datuakSortu() {
+
+		String sexua = null;
+		if (rdbtnGizkon.isSelected() == true) {
+			sexua = "Gizona";
+		}
+		if (rdbtnEmakume.isSelected() == true) {
+			sexua = "Emakumea";
+		}
+		Epaile E = new Epaile(textNan.getText(), textIzena.getText(), textAbizena.getText(),
+				textJatorrizkoHerria.getText(), sexua, textJaiotzeData.getText());
+		dlmEpaile.addElement(E);
+
+		try {
+
+			Class.forName("com.mysql.jdbc.Driver");
+			Connection konexioa = DriverManager.getConnection("jdbc:mysql://localhost/erronka_t4", "root", "");
+			Statement st = konexioa.createStatement();
+			int urtea = Integer.parseInt(textJaiotzeData.getText());
+
+			String sql = "INSERT INTO epailea VALUES ('" + textNan.getText() + "', '" + textIzena.getText() + "', '"
+					+ textAbizena.getText() + "', '" + textJatorrizkoHerria.getText() + "', '" + sexua + "', '" + urtea
+					+ "');";
+			System.out.println(sql);
+			st.executeUpdate(sql);
+
+			konexioa.close();
+
+		} catch (SQLException | ClassNotFoundException sqle) {
+			// ez baldin bada konexioa era egokian egin
+			sqle.printStackTrace();
+			System.out.println("Konexio errorea");
+		}
+	}
+
+	public void datuakEzabatu() {
+		int index = listEpaile.getSelectedIndex();
+		System.out.println(index);
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			Connection konexioa = DriverManager.getConnection("jdbc:mysql://localhost/erronka_t4", "root", "");
+			Statement st = konexioa.createStatement();
+
+			String nan = dlmEpaile.get(index).getNan();
+			String izena = textIzena.getText();
+			String abizenak = textAbizena.getText();
+			String herria = textJatorrizkoHerria.getText();
+
+			String sql = "DELETE FROM epailea WHERE EpaileaNAN=" + "'" + nan + "';";
+
+			System.out.println(sql);
+			st.executeUpdate(sql);
+
+			konexioa.close();
+
+		} catch (SQLException | ClassNotFoundException sqle) {
+			// ez baldin bada konexioa era egokian egin
+			sqle.printStackTrace();
+			System.out.println("Konexio errorea");
+		}
 	}
 }

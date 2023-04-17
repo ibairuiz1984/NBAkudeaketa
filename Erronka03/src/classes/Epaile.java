@@ -3,26 +3,20 @@ package classes;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class Epaile extends Pertsona implements Serializable{
-	private String epaileZnb;
-	
-	
-	public Epaile (String nan, String izena, String abizena, String jaiotzeData, 
-			String jatorrizkoHerria, String sexua, String epaileZnb){
-		super(nan, izena, abizena, jaiotzeData, jatorrizkoHerria, sexua);
-		this.epaileZnb = epaileZnb;
-	
-	}
+public class Epaile extends Pertsona implements Serializable {
 
+	public Epaile(String nan, String izena, String abizena, String jaiotzeData, String jatorrizkoHerria, String sexua) {
+		super(nan, izena, abizena, jaiotzeData, jatorrizkoHerria, sexua);
+
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + Objects.hash(epaileZnb);
+		result = prime * result + Objects.hash();
 		return result;
 	}
-
 
 	@Override
 	public boolean equals(Object obj) {
@@ -36,14 +30,9 @@ public class Epaile extends Pertsona implements Serializable{
 		return Objects.equals(super.getNan(), other.getNan());
 	}
 
-
 	@Override
 	public String toString() {
 		return super.getIzena() + " " + super.getAbizena();
 	}
-	
-	
-	
-	
 
 }
