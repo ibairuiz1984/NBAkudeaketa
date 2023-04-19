@@ -253,6 +253,7 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 		lblNanZnb.setBounds(455, 157, 122, 13);
 		contentPane.add(lblNanZnb);
 
+		/** Datuak datu basetik kargatzeko metodoaren deia **/
 		datuakKargatu();
 
 	}
@@ -304,7 +305,7 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 		}
 
 		if (o == btnEzabatu) {
-
+			/** Datuak ezabatzeko metodoaren deia **/
 			datuakEzabatu();
 			// Lau zerrendetatik ezabatzeko
 
@@ -321,7 +322,7 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 		}
 
 		if (o == btnAtzera) {
-
+			//
 			adminWindow m = new adminWindow();
 			m.setVisible(true);
 			m.setBounds(100, 100, 800, 500);
@@ -329,10 +330,11 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 			dispose();
 
 		}
-		
+
 	}
 
-	// Datuak ondo dauden kontrolatzeko metodoa
+	
+	/** Datuak ondo dauden kontrolatzeko metodoa **/
 	private boolean datuakBeteta() {
 		// izena, abizena, nan, jaiote urtea eta jatorrizko herria idatzi dituela
 		// kontrolatzeko
@@ -380,6 +382,7 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 
 	}
 
+	/** Datuak kargatzeko metodoa **/
 	public void datuakKargatu() {
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
@@ -405,6 +408,7 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 		}
 	}
 
+	/** Datuak sortzeko metodoa **/
 	public void datuakSortu() {
 
 		String sexua = null;
@@ -440,6 +444,7 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 		}
 	}
 
+	/** Aukeratutako datua ezabatzeko metodoa **/
 	public void datuakEzabatu() {
 		int index = listEpaile.getSelectedIndex();
 		System.out.println(index);

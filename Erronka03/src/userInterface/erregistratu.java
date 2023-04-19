@@ -24,8 +24,18 @@ import javax.swing.JComboBox;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import javax.swing.event.ChangeListener;
@@ -145,14 +155,21 @@ public class erregistratu extends JFrame implements ActionListener, FocusListene
 		comboBoxTalde.setBounds(24, 376, 284, 27);
 		contentPane.add(comboBoxTalde);
 
-		ArrayList<Talde> taldeak = gordeIrakurri.irakurriTalde("taldeakStable.txt");
-		if (taldeak.size() > 0) {
-			for (int i = 0; i < taldeak.size(); i++) {
-				comboBoxTalde.addItem(taldeak.get(i).getIzena());
+		// Kargatu taldeak SQL datu basetik
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			Connection konexioa = DriverManager.getConnection("jdbc:mysql://localhost/erronka_t4", "root", "");
+			Statement st = konexioa.createStatement();
+			ResultSet rs = st.executeQuery("SELECT * FROM talde");
+			while (rs.next()) {
+				
+				comboBoxTalde.addItem((String) rs.getObject("TaldeIzena"));
 			}
-
-		} else {
-			comboBoxTalde.addItem("Oraindik ez dago talderik sortuta");
+			rs.close();
+			st.close();
+			konexioa.close();
+		} catch (SQLException | ClassNotFoundException sqle) {
+			sqle.printStackTrace();
 		}
 
 		btnSortu = new JButton("Sortu");
