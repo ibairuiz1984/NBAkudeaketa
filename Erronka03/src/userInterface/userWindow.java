@@ -42,7 +42,6 @@ public class userWindow extends JFrame implements ActionListener, FocusListener 
 	private JLabel lblKaixo;
 	private JSeparator separatorJSailkapena;
 	private JButton btnIrten;
-	private JComboBox<String> comboBoxDenboraldi;
 	private JLabel lblNewLabel;
 	private JLabel lblLaurdenTaldeA;
 	private JLabel lblLaurdenTaldeB;
@@ -152,22 +151,7 @@ public class userWindow extends JFrame implements ActionListener, FocusListener 
 		contentPane.add(btnIrten);
 		System.setProperty("sun.java2d.uiScale", "1.0");
 
-		comboBoxDenboraldi = new JComboBox<String>();
-		comboBoxDenboraldi.addItem("Oraingo kanporaketa");
-
-		ArrayList<Kanporaketa> kanporaketakOld = gordeIrakurri.irakurriKanporaketakOld("kanporaketakOld.txt");
-		if (kanporaketakOld.size() > 0) {
-			for (int i = 0; i < kanporaketakOld.size(); i++) {
-				comboBoxDenboraldi.addItem(kanporaketakOld.get(i).getIzena());
-			}
-
-		}
-
-		comboBoxDenboraldi.addActionListener(this);
-		comboBoxDenboraldi.setEditable(true);
-		comboBoxDenboraldi.setFont(new Font("Montserrat", Font.PLAIN, 12));
-		comboBoxDenboraldi.setBounds(219, 75, 183, 27);
-		contentPane.add(comboBoxDenboraldi);
+		
 
 		lblLaurdenTaldeA = new JLabel("Undefined");
 		lblLaurdenTaldeA.setFont(new Font("Montserrat", Font.PLAIN, 10));
@@ -538,142 +522,6 @@ public class userWindow extends JFrame implements ActionListener, FocusListener 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object o = e.getSource();
-
-		if (o == comboBoxDenboraldi) {
-			Kanporaketa K = null;
-			int index = comboBoxDenboraldi.getSelectedIndex();
-			ArrayList<Kanporaketa> kanporaketakOld = gordeIrakurri.irakurriKanporaketakOld("kanporaketakOld.txt");
-
-			if (index == 0) {
-				K = gordeIrakurri.irakurriKanporaketak("kanporaketak.txt");
-			} else {
-				for (int i = 0; i < kanporaketakOld.size(); i++) {
-					if (kanporaketakOld.get(i).getIzena().equals(comboBoxDenboraldi.getItemAt(index))) {
-						K = kanporaketakOld.get(i);
-					}
-				}
-			}
-
-			lblLaurdenTaldeA.setText(gordeIrakurri.setTalde(0, "Final Laurdenak", "A", K));
-			lblLaurdenTaldeB.setText(gordeIrakurri.setTalde(0, "Final Laurdenak", "B", K));
-			lblLaurdenTaldeC.setText(gordeIrakurri.setTalde(1, "Final Laurdenak", "A", K));
-			lblLaurdenTaldeD.setText(gordeIrakurri.setTalde(1, "Final Laurdenak", "B", K));
-			lblLaurdenTaldeE.setText(gordeIrakurri.setTalde(2, "Final Laurdenak", "A", K));
-			lblLaurdenTaldeF.setText(gordeIrakurri.setTalde(2, "Final Laurdenak", "B", K));
-			lblLaurdenTaldeG.setText(gordeIrakurri.setTalde(3, "Final Laurdenak", "A", K));
-			lblLaurdenTaldeH.setText(gordeIrakurri.setTalde(3, "Final Laurdenak", "B", K));
-			
-			lblArbitroLaurden1.setText(gordeIrakurri.setArbitro(0, "Final Laurdenak", K));
-			lblArbitroLaurden2.setText(gordeIrakurri.setArbitro(1, "Final Laurdenak", K));
-			lblArbitroLaurden3.setText(gordeIrakurri.setArbitro(2, "Final Laurdenak", K));
-			lblArbitroLaurden4.setText(gordeIrakurri.setArbitro(3, "Final Laurdenak", K));
-
-			if (K.isLaurdenfinished()) {
-
-				lblLaurdenPointsA.setText(gordeIrakurri.setPoints(0, "Final Laurdenak", "A", K));
-				lblLaurdenPointsB.setText(gordeIrakurri.setPoints(0, "Final Laurdenak", "B", K));
-				lblLaurdenPointsC.setText(gordeIrakurri.setPoints(1, "Final Laurdenak", "A", K));
-				lblLaurdenPointsD.setText(gordeIrakurri.setPoints(1, "Final Laurdenak", "B", K));
-				lblLaurdenPointsE.setText(gordeIrakurri.setPoints(2, "Final Laurdenak", "A", K));
-				lblLaurdenPointsF.setText(gordeIrakurri.setPoints(2, "Final Laurdenak", "B", K));
-				lblLaurdenPointsG.setText(gordeIrakurri.setPoints(3, "Final Laurdenak", "A", K));
-				lblLaurdenPointsH.setText(gordeIrakurri.setPoints(3, "Final Laurdenak", "B", K));
-
-				lblSemiTaldeA.setText(gordeIrakurri.setTalde(0, "Semifinalak", "A", K));
-				lblSemiTaldeB.setText(gordeIrakurri.setTalde(0, "Semifinalak", "B", K));
-				lblSemiTaldeC.setText(gordeIrakurri.setTalde(1, "Semifinalak", "A", K));
-				lblSemiTaldeD.setText(gordeIrakurri.setTalde(1, "Semifinalak", "B", K));
-				
-				lblArbitroSemi1.setText(gordeIrakurri.setArbitro(0, "Semifinalak", K));
-				lblArbitroSemi2.setText(gordeIrakurri.setArbitro(1, "Semifinalak", K));
-
-			} else {
-				lblLaurdenPointsA.setText("");
-				lblLaurdenPointsB.setText("");
-				lblLaurdenPointsC.setText("");
-				lblLaurdenPointsD.setText("");
-				lblLaurdenPointsE.setText("");
-				lblLaurdenPointsF.setText("");
-				lblLaurdenPointsG.setText("");
-				lblLaurdenPointsH.setText("");
-
-				lblSemiTaldeA.setText("Undefined");
-				lblSemiTaldeB.setText("Undefined");
-				lblSemiTaldeC.setText("Undefined");
-				lblSemiTaldeD.setText("Undefined");
-				
-				lblArbitroSemi1.setText("");
-				lblArbitroSemi2.setText("");
-			}
-
-			if (K.isSemifinished()) {
-				lblSemiPointsA.setText(gordeIrakurri.setPoints(0, "Semifinalak", "A", K));
-				lblSemiPointsB.setText(gordeIrakurri.setPoints(0, "Semifinalak", "B", K));
-				lblSemiPointsC.setText(gordeIrakurri.setPoints(1, "Semifinalak", "A", K));
-				lblSemiPointsD.setText(gordeIrakurri.setPoints(1, "Semifinalak", "B", K));
-
-				lbl34TaldeA.setText(gordeIrakurri.setTalde(0, "34postuak", "A", K));
-				lbl34TaldeB.setText(gordeIrakurri.setTalde(0, "34postuak", "B", K));
-
-				lblFinalTaldeA.setText(gordeIrakurri.setTalde(0, "Final", "A", K));
-				lblFinalTaldeB.setText(gordeIrakurri.setTalde(0, "Final", "B", K));
-				
-				lblArbitro34.setText(gordeIrakurri.setArbitro(0, "34postuak", K));
-				lblArbitroFinal.setText(gordeIrakurri.setArbitro(0, "Final", K));
-			} else {
-				lblSemiPointsA.setText("");
-				lblSemiPointsB.setText("");
-				lblSemiPointsC.setText("");
-				lblSemiPointsD.setText("");
-
-				lbl34TaldeA.setText("Undefined");
-				lbl34TaldeB.setText("Undefined");
-
-				lblFinalTaldeA.setText("Undefined");
-				lblFinalTaldeB.setText("Undefined");
-				
-				lblArbitro34.setText("");
-				lblArbitroFinal.setText("");
-			}
-
-			if (K.is34finished()) {
-				lbl34PointsA.setText(gordeIrakurri.setPoints(0, "34postuak", "A", K));
-				lbl34PointsB.setText(gordeIrakurri.setPoints(0, "34postuak", "B", K));
-
-				if (Integer.parseInt(K.getPos34().getPuntuakA()) > Integer.parseInt(K.getPos34().getPuntuakB())) {
-					lblPos3.setText("3");
-					lblPos4.setText("4");
-				} else {
-					lblPos3.setText("4");
-					lblPos4.setText("3");
-				}
-
-			} else {
-				lbl34PointsA.setText("");
-				lbl34PointsB.setText("");
-				lblPos3.setText("");
-				lblPos4.setText("");
-			}
-
-			if (K.isFinalfinished()) {
-				lblFinalPointsA.setText(gordeIrakurri.setPoints(0, "Final", "A", K));
-				lblFinalPointsB.setText(gordeIrakurri.setPoints(0, "Final", "B", K));
-
-				if (Integer.parseInt(K.getFinala().getPuntuakA()) > Integer.parseInt(K.getFinala().getPuntuakB())) {
-					lblPos1.setText("1");
-					lblPos2.setText("2");
-				} else {
-					lblPos1.setText("2");
-					lblPos2.setText("1");
-				}
-			} else {
-				lblFinalPointsA.setText("");
-				lblFinalPointsB.setText("");
-				lblPos1.setText("");
-				lblPos2.setText("");
-			}
-
-		}
 
 		if (o == btnIrten) {
 			hasiera m = new hasiera();

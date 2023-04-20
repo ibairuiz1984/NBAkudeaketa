@@ -30,6 +30,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.FileInputStream;
@@ -67,6 +69,7 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 	private JButton btnSortu;
 	private JButton btnAtzera;
 	private JButton btnEzabatu;
+	private JButton btnAldatu;
 
 	private JList<Epaile> listEpaile;
 	private DefaultListModel<Epaile> dlmEpaile;
@@ -78,6 +81,8 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 	private String sexua;
 	private String rola = "Jokalaria";
 	private boolean fisio = false;
+
+	private String selectedNan;
 
 	/**
 	 * Launch the application.
@@ -125,6 +130,14 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 		contentPane.add(separatorEntrenatzaile);
 
 		listEpaile = new JList<Epaile>();
+		listEpaile.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				txtKargatu();
+
+			}
+
+		});
 		listEpaile.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		listEpaile.setFont(new Font("Montserrat", Font.PLAIN, 12));
 		listEpaile.setBounds(28, 134, 228, 230);
@@ -217,7 +230,7 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 		btnSortu.setForeground(new Color(255, 255, 255));
 		btnSortu.setBackground(new Color(104, 111, 119));
 		btnSortu.setFont(new Font("Montserrat", Font.PLAIN, 16));
-		btnSortu.setBounds(599, 431, 85, 33);
+		btnSortu.setBounds(671, 431, 85, 33);
 		contentPane.add(btnSortu);
 
 		btnAtzera = new JButton("ATZERA");
@@ -238,7 +251,7 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 		btnEzabatu.setBorderPainted(false);
 		btnEzabatu.setBorder(new EmptyBorder(1, 1, 1, 1));
 		btnEzabatu.setBackground(new Color(104, 111, 119));
-		btnEzabatu.setBounds(504, 431, 85, 33);
+		btnEzabatu.setBounds(576, 431, 85, 33);
 		contentPane.add(btnEzabatu);
 
 		textNan = new JTextField();
@@ -253,6 +266,16 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 		lblNanZnb.setBounds(455, 157, 122, 13);
 		contentPane.add(lblNanZnb);
 
+		btnAldatu = new JButton("Aldatu");
+		btnAldatu.addActionListener(this);
+		btnAldatu.setForeground(Color.WHITE);
+		btnAldatu.setFont(new Font("Dialog", Font.PLAIN, 16));
+		btnAldatu.setBorderPainted(false);
+		btnAldatu.setBorder(new EmptyBorder(1, 1, 1, 1));
+		btnAldatu.setBackground(new Color(104, 111, 119));
+		btnAldatu.setBounds(481, 431, 85, 33);
+		contentPane.add(btnAldatu);
+
 		/** Datuak datu basetik kargatzeko metodoaren deia **/
 		datuakKargatu();
 
@@ -263,10 +286,16 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 		Object o = e.getSource();
 
 		if (o == btnSortu) {
-			datuakSortu();
 
 			if (datuakBeteta()) {
 				boolean badago = false;
+				String sexua = null;
+				if (rdbtnGizkon.isSelected() == true) {
+					sexua = "Gizona";
+				}
+				if (rdbtnEmakume.isSelected() == true) {
+					sexua = "Emakumea";
+				}
 
 				Epaile Epaile = new Epaile(textNan.getText(), textIzena.getText(), textAbizena.getText(),
 						textJaiotzeData.getText(), textJatorrizkoHerria.getText(), sexua);
@@ -279,6 +308,7 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 					}
 					// Objektua ez badago zerrendan, alfabetikoki sartu
 					if (!badago) {
+
 						int pos = dlmEpaile.size();
 
 						for (int i = 0; i < dlmEpaile.size(); i++) {
@@ -289,7 +319,28 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 						}
 
 						dlmEpaile.add(pos, Epaile);
-						gordeIrakurri.gordeEpaile(dlmEpaile, "epaile.txt");
+
+						try {
+
+							Class.forName("com.mysql.jdbc.Driver");
+							Connection konexioa = DriverManager.getConnection("jdbc:mysql://localhost/erronka_t4",
+									"root", "");
+							Statement st = konexioa.createStatement();
+							int urtea = Integer.parseInt(textJaiotzeData.getText());
+
+							String sql = "INSERT INTO epailea VALUES ('" + textNan.getText() + "', '"
+									+ textIzena.getText() + "', '" + textAbizena.getText() + "', '"
+									+ textJatorrizkoHerria.getText() + "', '" + sexua + "', '" + urtea + "');";
+							System.out.println(sql);
+							st.executeUpdate(sql);
+
+							konexioa.close();
+
+						} catch (SQLException | ClassNotFoundException sqle) {
+							// ez baldin bada konexioa era egokian egin
+							sqle.printStackTrace();
+							System.out.println("Konexio errorea");
+						}
 
 					} else {
 						JOptionPane.showMessageDialog(contentPane, "Epaile hau sartuta dago jada.");
@@ -298,7 +349,7 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 					// Zerrenda hutsik badago objektua sartu
 				} else {
 					dlmEpaile.addElement(Epaile);
-					gordeIrakurri.gordeEpaile(dlmEpaile, "epaile.txt");
+
 				}
 
 			}
@@ -313,7 +364,6 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 
 			if (!listEpaile.isSelectionEmpty()) {
 				dlmEpaile.remove(index);
-				gordeIrakurri.gordeEpaile(dlmEpaile, "epaile.txt");
 
 			} else {
 				JOptionPane.showMessageDialog(contentPane, "Errorea Ezabatzean. Ez duzu taldekiderik aukeratu");
@@ -331,9 +381,68 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 
 		}
 
+		if (o == btnAldatu) {		
+
+			if (datuakBeteta()) {
+				int index = listEpaile.getSelectedIndex();
+				dlmEpaile.remove(index);
+				String sexua = null;
+				if (rdbtnGizkon.isSelected() == true) {
+					sexua = "Gizona";
+				}
+				if (rdbtnEmakume.isSelected() == true) {
+					sexua = "Emakumea";
+				}
+
+				Epaile Epaile = new Epaile(textNan.getText(), textIzena.getText(), textAbizena.getText(),
+						textJaiotzeData.getText(), textJatorrizkoHerria.getText(), sexua);
+				// Zerrenda hutsik ez badago begiratu ea objektua jada dagoen
+
+				int pos = dlmEpaile.size();
+
+				for (int i = 0; i < dlmEpaile.size(); i++) {
+					if (Epaile.compareTo(dlmEpaile.get(i)) < 0) {
+						pos = i;
+						break;
+					}
+				}
+
+				dlmEpaile.add(pos, Epaile);
+
+				try {
+
+					Class.forName("com.mysql.jdbc.Driver");
+					Connection konexioa = DriverManager.getConnection("jdbc:mysql://localhost/erronka_t4", "root", "");
+					Statement st = konexioa.createStatement();
+					int urtea = Integer.parseInt(textJaiotzeData.getText());
+
+					String sql = "UPDATE epailea SET EpaileaNan ='" + textNan.getText() + "', EPIzen = '"
+							+ textIzena.getText() + "', EPAbizen = '" + textAbizena.getText()
+							+ "', EPJatorrizkoHerria = '" + textJatorrizkoHerria.getText() + "', EPSexua = '" + sexua
+							+ "', EPJaioteUrtea = '" + urtea + "' WHERE EpaileaNan = '" + selectedNan + "';";
+					System.out.println(sql);
+					st.executeUpdate(sql);
+
+					konexioa.close();
+
+				} catch (SQLException | ClassNotFoundException sqle) {
+					// ez baldin bada konexioa era egokian egin
+					sqle.printStackTrace();
+					System.out.println("Konexio errorea");
+				}
+
+			} else {
+				JOptionPane.showMessageDialog(contentPane, "Epaile hau sartuta dago jada.");
+			}
+
+			// Zerrenda hutsik badago objektua sartu
+		} else {
+			int index = listEpaile.getSelectedIndex();
+
+		}
+
 	}
 
-	
 	/** Datuak ondo dauden kontrolatzeko metodoa **/
 	private boolean datuakBeteta() {
 		// izena, abizena, nan, jaiote urtea eta jatorrizko herria idatzi dituela
@@ -392,49 +501,13 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 
 			while (rs.next()) {
 
-				String urtea = Integer.toString((Integer) rs.getObject("EPJaioteUrtea"));
+				String urtea = (String) rs.getObject("EPJaioteUrtea");
 				Epaile E = new Epaile((String) rs.getObject("EpaileaNAN"), (String) rs.getObject("EPIzen"),
 						(String) rs.getObject("EPAbizen"), urtea, (String) rs.getObject("EPJatorrizkoHerria"),
 						(String) rs.getObject("EPSexua"));
 				dlmEpaile.addElement(E);
 
 			}
-			konexioa.close();
-
-		} catch (SQLException | ClassNotFoundException sqle) {
-			// ez baldin bada konexioa era egokian egin
-			sqle.printStackTrace();
-			System.out.println("Konexio errorea");
-		}
-	}
-
-	/** Datuak sortzeko metodoa **/
-	public void datuakSortu() {
-
-		String sexua = null;
-		if (rdbtnGizkon.isSelected() == true) {
-			sexua = "Gizona";
-		}
-		if (rdbtnEmakume.isSelected() == true) {
-			sexua = "Emakumea";
-		}
-		Epaile E = new Epaile(textNan.getText(), textIzena.getText(), textAbizena.getText(),
-				textJatorrizkoHerria.getText(), sexua, textJaiotzeData.getText());
-		dlmEpaile.addElement(E);
-
-		try {
-
-			Class.forName("com.mysql.jdbc.Driver");
-			Connection konexioa = DriverManager.getConnection("jdbc:mysql://localhost/erronka_t4", "root", "");
-			Statement st = konexioa.createStatement();
-			int urtea = Integer.parseInt(textJaiotzeData.getText());
-
-			String sql = "INSERT INTO epailea VALUES ('" + textNan.getText() + "', '" + textIzena.getText() + "', '"
-					+ textAbizena.getText() + "', '" + textJatorrizkoHerria.getText() + "', '" + sexua + "', '" + urtea
-					+ "');";
-			System.out.println(sql);
-			st.executeUpdate(sql);
-
 			konexioa.close();
 
 		} catch (SQLException | ClassNotFoundException sqle) {
@@ -470,5 +543,24 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 			sqle.printStackTrace();
 			System.out.println("Konexio errorea");
 		}
+	}
+
+	public void txtKargatu() {
+		int index = listEpaile.getSelectedIndex();
+		textNan.setText(dlmEpaile.get(index).getNan());
+		textIzena.setText(dlmEpaile.get(index).getIzena());
+		textAbizena.setText(dlmEpaile.get(index).getAbizena());
+		textJaiotzeData.setText(dlmEpaile.get(index).getJaiotzeData());
+		textJatorrizkoHerria.setText(dlmEpaile.get(index).getJatorrizkoHerria());
+		selectedNan = dlmEpaile.get(index).getNan();
+		
+		if (dlmEpaile.get(index).getSexua().equals("Gizona")) {			
+			rdbtnGizkon.setSelected(true);
+			rdbtnEmakume.setSelected(false);
+		} else {
+			rdbtnEmakume.setSelected(true);
+			rdbtnGizkon.setSelected(false);
+		}
+
 	}
 }

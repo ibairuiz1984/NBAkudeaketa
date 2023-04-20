@@ -44,7 +44,6 @@ public class adminWindow extends JFrame implements ActionListener {
 	private JButton btnSortuKanporaketa;
 	private JButton btnSartuEmaitzak;
 	private JButton btnEpaileak;
-	private JComboBox<String> comboBoxDenboraldi;
 	private JLabel lblNewLabel;
 	private JLabel lblLaurdenTaldeA;
 	private JLabel lblLaurdenTaldeB;
@@ -183,25 +182,8 @@ public class adminWindow extends JFrame implements ActionListener {
 		btnSartuEmaitzak.setBackground(new Color(0, 107, 183));
 		btnSartuEmaitzak.setBounds(598, 383, 163, 33);
 		contentPane.add(btnSartuEmaitzak);
-		comboBoxDenboraldi = new JComboBox<String>();
+
 		
-		//kargatu horaingo kanporaketa
-		comboBoxDenboraldi.addItem("Oraingo kanporaketa");
-
-		//kargatu kanporaketa zaharrak
-		ArrayList<Kanporaketa> kanporaketakOld = gordeIrakurri.irakurriKanporaketakOld("kanporaketakOld.txt");
-		if (kanporaketakOld.size() > 0) {
-			for (int i = 0; i < kanporaketakOld.size(); i++) {
-				comboBoxDenboraldi.addItem(kanporaketakOld.get(i).getIzena());
-			}
-
-		}
-
-		comboBoxDenboraldi.addActionListener(this);
-		comboBoxDenboraldi.setEditable(true);
-		comboBoxDenboraldi.setFont(new Font("Montserrat", Font.PLAIN, 12));
-		comboBoxDenboraldi.setBounds(579, 79, 183, 27);
-		contentPane.add(comboBoxDenboraldi);
 
 		lblLaurdenTaldeA = new JLabel("Undefined");
 		lblLaurdenTaldeA.setFont(new Font("Montserrat", Font.PLAIN, 10));
@@ -568,172 +550,6 @@ public class adminWindow extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object o = e.getSource();
-
-		if (o == comboBoxDenboraldi) {
-			Kanporaketa K = null;
-			
-			//gorde aukeratu den index
-			int index = comboBoxDenboraldi.getSelectedIndex();
-			
-			//Kargatu kanporaketa zaharrak
-			ArrayList<Kanporaketa> kanporaketakOld = gordeIrakurri.irakurriKanporaketakOld("kanporaketakOld.txt");
-
-			//indizea 0 bada, kargatu horaingo kanporaketa
-			if (index == 0) {
-				K = gordeIrakurri.irakurriKanporaketak("kanporaketak.txt");
-				
-			//Bestela, arakatu kanporaketa zaharrak berdina aurkitu arte
-			} else {
-				for (int i = 0; i < kanporaketakOld.size(); i++) {
-					if (kanporaketakOld.get(i).getIzena().equals(comboBoxDenboraldi.getItemAt(index))) {
-						K = kanporaketakOld.get(i);
-					}
-				}
-			}
-
-			//Kargatu laurdeneko taldeak
-			lblLaurdenTaldeA.setText(gordeIrakurri.setTalde(0, "Final Laurdenak", "A", K));
-			lblLaurdenTaldeB.setText(gordeIrakurri.setTalde(0, "Final Laurdenak", "B", K));
-			lblLaurdenTaldeC.setText(gordeIrakurri.setTalde(1, "Final Laurdenak", "A", K));
-			lblLaurdenTaldeD.setText(gordeIrakurri.setTalde(1, "Final Laurdenak", "B", K));
-			lblLaurdenTaldeE.setText(gordeIrakurri.setTalde(2, "Final Laurdenak", "A", K));
-			lblLaurdenTaldeF.setText(gordeIrakurri.setTalde(2, "Final Laurdenak", "B", K));
-			lblLaurdenTaldeG.setText(gordeIrakurri.setTalde(3, "Final Laurdenak", "A", K));
-			lblLaurdenTaldeH.setText(gordeIrakurri.setTalde(3, "Final Laurdenak", "B", K));
-			
-			//Kargatu laurdeneko arbitroak
-			lblArbitroLaurden1.setText(gordeIrakurri.setArbitro(0, "Final Laurdenak", K));
-			lblArbitroLaurden2.setText(gordeIrakurri.setArbitro(1, "Final Laurdenak", K));
-			lblArbitroLaurden3.setText(gordeIrakurri.setArbitro(2, "Final Laurdenak", K));
-			lblArbitroLaurden4.setText(gordeIrakurri.setArbitro(3, "Final Laurdenak", K));
-
-			//Laurdenak amiatuta badaude
-			if (K.isLaurdenfinished()) {
-
-				//Kargatu laurdeneko emaitzak
-				lblLaurdenPointsA.setText(gordeIrakurri.setPoints(0, "Final Laurdenak", "A", K));
-				lblLaurdenPointsB.setText(gordeIrakurri.setPoints(0, "Final Laurdenak", "B", K));
-				lblLaurdenPointsC.setText(gordeIrakurri.setPoints(1, "Final Laurdenak", "A", K));
-				lblLaurdenPointsD.setText(gordeIrakurri.setPoints(1, "Final Laurdenak", "B", K));
-				lblLaurdenPointsE.setText(gordeIrakurri.setPoints(2, "Final Laurdenak", "A", K));
-				lblLaurdenPointsF.setText(gordeIrakurri.setPoints(2, "Final Laurdenak", "B", K));
-				lblLaurdenPointsG.setText(gordeIrakurri.setPoints(3, "Final Laurdenak", "A", K));
-				lblLaurdenPointsH.setText(gordeIrakurri.setPoints(3, "Final Laurdenak", "B", K));
-
-				//Kargatu semiifinletako taldeak
-				lblSemiTaldeA.setText(gordeIrakurri.setTalde(0, "Semifinalak", "A", K));
-				lblSemiTaldeB.setText(gordeIrakurri.setTalde(0, "Semifinalak", "B", K));
-				lblSemiTaldeC.setText(gordeIrakurri.setTalde(1, "Semifinalak", "A", K));
-				lblSemiTaldeD.setText(gordeIrakurri.setTalde(1, "Semifinalak", "B", K));
-				
-				//Kargatu semiifinletako emaitzak
-				lblArbitroSemi1.setText(gordeIrakurri.setArbitro(0, "Semifinalak", K));
-				lblArbitroSemi2.setText(gordeIrakurri.setArbitro(1, "Semifinalak", K));
-
-			//Laurdenak amaitu ez badira, guztia zuriz idatzi
-			} else {
-				lblLaurdenPointsA.setText("");
-				lblLaurdenPointsB.setText("");
-				lblLaurdenPointsC.setText("");
-				lblLaurdenPointsD.setText("");
-				lblLaurdenPointsE.setText("");
-				lblLaurdenPointsF.setText("");
-				lblLaurdenPointsG.setText("");
-				lblLaurdenPointsH.setText("");
-
-				lblSemiTaldeA.setText("Undefined");
-				lblSemiTaldeB.setText("Undefined");
-				lblSemiTaldeC.setText("Undefined");
-				lblSemiTaldeD.setText("Undefined");
-				
-				lblArbitroSemi1.setText("");
-				lblArbitroSemi2.setText("");
-			}
-
-			//Kargatu semiifinletako taldeak
-			if (K.isSemifinished()) {
-				//Kargatu semifinaleko emiatzak
-				lblSemiPointsA.setText(gordeIrakurri.setPoints(0, "Semifinalak", "A", K));
-				lblSemiPointsB.setText(gordeIrakurri.setPoints(0, "Semifinalak", "B", K));
-				lblSemiPointsC.setText(gordeIrakurri.setPoints(1, "Semifinalak", "A", K));
-				lblSemiPointsD.setText(gordeIrakurri.setPoints(1, "Semifinalak", "B", K));
-
-				//Kargatu hirugarren ta laugarren postuko taldeak
-				lbl34TaldeA.setText(gordeIrakurri.setTalde(0, "34postuak", "A", K));
-				lbl34TaldeB.setText(gordeIrakurri.setTalde(0, "34postuak", "B", K));
-
-				//Kargatu finaleko taldeak
-				lblFinalTaldeA.setText(gordeIrakurri.setTalde(0, "Final", "A", K));
-				lblFinalTaldeB.setText(gordeIrakurri.setTalde(0, "Final", "B", K));
-				
-				//kargatu arbitroak
-				lblArbitro34.setText(gordeIrakurri.setArbitro(0, "34postuak", K));
-				lblArbitroFinal.setText(gordeIrakurri.setArbitro(0, "Final", K));
-				
-			//Semifinalak amaitu ez badira, idatzi guztia zuriz
-			} else {
-				lblSemiPointsA.setText("");
-				lblSemiPointsB.setText("");
-				lblSemiPointsC.setText("");
-				lblSemiPointsD.setText("");
-
-				lbl34TaldeA.setText("Undefined");
-				lbl34TaldeB.setText("Undefined");
-
-				lblFinalTaldeA.setText("Undefined");
-				lblFinalTaldeB.setText("Undefined");
-				
-				lblArbitro34.setText("");
-				lblArbitroFinal.setText("");
-			}
-
-			//3 eta 4 postuetako partida amaitu bada
-			if (K.is34finished()) {
-				
-				//kargatu 3 eta 4 postuetako puntuak
-				lbl34PointsA.setText(gordeIrakurri.setPoints(0, "34postuak", "A", K));
-				lbl34PointsB.setText(gordeIrakurri.setPoints(0, "34postuak", "B", K));
-				
-				//idatzi 3 eta 4 postuak
-				if (Integer.parseInt(K.getPos34().getPuntuakA()) > Integer.parseInt(K.getPos34().getPuntuakB())) {
-					lblPos3.setText("3");
-					lblPos4.setText("4");
-				} else {
-					lblPos3.setText("4");
-					lblPos4.setText("3");
-				}
-
-			//Bestela dena zuriz idatzi
-			} else {
-				lbl34PointsA.setText("");
-				lbl34PointsB.setText("");
-				lblPos3.setText("");
-				lblPos4.setText("");
-			}
-
-			//finala amaitu bada
-			if (K.isFinalfinished()) {
-				
-				//kargatu finaleko puntuak
-				lblFinalPointsA.setText(gordeIrakurri.setPoints(0, "Final", "A", K));
-				lblFinalPointsB.setText(gordeIrakurri.setPoints(0, "Final", "B", K));
-
-				//idatzi 1 eta 2 postuak
-				if (Integer.parseInt(K.getFinala().getPuntuakA()) > Integer.parseInt(K.getFinala().getPuntuakB())) {
-					lblPos1.setText("1");
-					lblPos2.setText("2");
-				} else {
-					lblPos1.setText("2");
-					lblPos2.setText("1");
-				}
-			} else {
-				lblFinalPointsA.setText("");
-				lblFinalPointsB.setText("");
-				lblPos1.setText("");
-				lblPos2.setText("");
-			}
-
-		}
 
 		if (o == btnSortuTaldea) {
 			sortuTaldekideak m = new sortuTaldekideak();
