@@ -494,7 +494,7 @@ public class sortuEpaileak extends JFrame implements ActionListener, FocusListen
 	/** Datuak kargatzeko metodoa **/
 	public void datuakKargatu() {
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
+			Class.forName("com.mysql.cj.jdbc.Driver");
 			Connection konexioa = DriverManager.getConnection("jdbc:mysql://localhost/erronka_t4", "root", "");
 			Statement st = konexioa.createStatement();
 			ResultSet rs = st.executeQuery("SELECT * FROM epailea");
